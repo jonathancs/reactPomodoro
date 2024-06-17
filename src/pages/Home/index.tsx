@@ -3,6 +3,8 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as zod from 'zod'
 import { useEffect, useState } from 'react'
+import { differenceInSeconds } from 'date-fns'
+
 import {
   CountdownContainer,
   FormContainer,
@@ -24,27 +26,43 @@ interface Cycle {
   id: string
   task: string
   minutesAmount: number
+  startDate: Date
 }
+
 export function Home() {
   const [cycles, setCycles] = useState<Cycle[]>([])
   const [activeCycleId, setActiveCycleId] = useState<string | null>(null)
   const [amountSecondsPassed, setAmountSecondsPassed] = useState(0)
-
   const { register, handleSubmit, watch, reset } = useForm<NewCycleFormData>({
     resolver: zodResolver(newCycleFormValidationSchema),
-  
     defaultValues: {
       task: '',
       minutesAmount: 0,
     },
   })
+
+  const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
+
+  useEffect(() => {
+    if (activeCycle) {
+      setInterval(() => {
+        setAmountSecondsPassed(
+          differenceInSeconds(new Date(), activeCycle.startDate),
+        )
+      }, 1000)
+    }
+  }, [activeCycle])
+
   function handleCreateNewCycle(data: NewCycleFormData) {
     const id = String(new Date().getTime())
+
     const newCycle: Cycle = {
       id,
       task: data.task,
       minutesAmount: data.minutesAmount,
+      startDate: new Date(),
     }
+
     setCycles((state) => [...state, newCycle])
     setActiveCycleId(id)
     reset()
@@ -52,29 +70,22 @@ export function Home() {
 
   // useEffect, monitors a variable, whenever it changes, executes a function.
   // 1st parameter: which function will be executed, 2nd parameter: which variable to monitor
-  
+
   // remember that it executes its functions THE 1ST TIME the element is rendered.
   // leaving the 2nd parameter empty [], it will only execute when rendered.
   // you can have code on a react component that only executes once.
   // usefull for api and database calls.
   // useEffect(() = {}, [])
 
-  
-
-  const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
-
   const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0
   const currentSeconds = activeCycle ? totalSeconds - amountSecondsPassed : 0
 
   const minutesAmount = Math.floor(currentSeconds / 60)
   const secondsAmount = currentSeconds % 60
-
   const minutes = String(minutesAmount).padStart(2, '0')
   const seconds = String(secondsAmount).padStart(2, '0')
-
   const task = watch('task')
   const isSubmitDisable = !task
-    
   return (
     <HomeContainer>
       <form onSubmit={handleSubmit(handleCreateNewCycle)}>
@@ -111,7 +122,6 @@ export function Home() {
           <span>{seconds[0]}</span>
           <span>{seconds[1]}</span>
         </CountdownContainer>
-
         <StartCountdownButton disabled={isSubmitDisable} type="submit">
           <Play size={24} />
           Começar
