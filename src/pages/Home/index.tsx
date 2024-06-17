@@ -1,7 +1,7 @@
-import { Play } from 'phosphor-react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import * as zod from 'zod'
+import { Play } from "phosphor-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as zod from "zod";
 
 import {
   CountdownContainer,
@@ -11,32 +11,62 @@ import {
   Separator,
   StartCountdownButton,
   TaskInput,
-} from './styles'
+} from "./styles";
+import { useState } from "react";
 
 const newCycleFormValidationSchema = zod.object({
-  task: zod.string().min(1, 'Informe a tarefa'),
+  task: zod.string().min(1, "Informe a tarefa"),
   minutesAmount: zod
     .number()
-    .min(5, 'O ciclo precisa ser de no mínimo 5 minutos.')
-    .max(60, 'O ciclo precisa ser de no máximo 60 minutos.'),
-})
+    .min(5, "O ciclo precisa ser de no mínimo 5 minutos.")
+    .max(60, "O ciclo precisa ser de no máximo 60 minutos."),
+});
 
-type NewCycleFormData = zod.infer<typeof newCycleFormValidationSchema>
+type NewCycleFormData = zod.infer<typeof newCycleFormValidationSchema>;
+
+interface Cycle {
+  id: string;
+  task: string;
+  minutesAmount: number;
+}
 
 export function Home() {
+  const [cycles, setCycles] = useState<Cycle[]>([]);
+  const [activeCycleId, setActiveCycleId] = useState<string | null>(null)
+
   const { register, handleSubmit, watch } = useForm({
     resolver: zodResolver(newCycleFormValidationSchema),
     defaultValues: {
-      task: '',
+      task: "",
       MinutesAmount: 0,
-    }
-  })
+    },
+  });
 
   function handleCreateNewCycle(data: NewCycleFormData) {
-    console.log(data)
+    const id = String(new Date().getTime())
+    
+    const newCycle: Cycle = {
+      id: id,
+      task: data.task,
+      minutesAmount: data.minutesAmount,
+    };
+
+    // it could stay like this...
+    // setCycles([...cycles, newCycle])
+
+    // but since it's changing a state, and this modification needs its former version to be altered
+    // then the arrow function is advised
+    setCycles((state) => [...state, newCycle])
+    setActiveCycleId(id)
+
+    reset();
   }
-  const task = watch('task')
-  const isSubmitDisable = !task
+
+  const activeCycle = cycles.find((cycle) => cycle.id == activeCycleId)
+
+  const task = watch("task");
+  const isSubmitDisable = !task;
+  
   return (
     <HomeContainer>
       <form onSubmit={handleSubmit(handleCreateNewCycle)}>
@@ -46,7 +76,7 @@ export function Home() {
             id="task"
             list="task-suggestions"
             placeholder="Dê um nome para o seu projeto"
-            {...register('task')}
+            {...register("task")}
           />
           <datalist id="task-suggestions">
             <option value="Projeto 1" />
@@ -62,7 +92,7 @@ export function Home() {
             step={5}
             min={5}
             max={60}
-            {...register('minutesAmount', { valueAsNumber: true })}
+            {...register("minutesAmount", { valueAsNumber: true })}
           />
           <span>minutos.</span>
         </FormContainer>
@@ -79,5 +109,5 @@ export function Home() {
         </StartCountdownButton>
       </form>
     </HomeContainer>
-  )
+  );
 }
