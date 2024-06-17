@@ -2,7 +2,7 @@ import { Play } from 'phosphor-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as zod from 'zod'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   CountdownContainer,
   FormContainer,
@@ -49,6 +49,17 @@ export function Home() {
     setActiveCycleId(id)
     reset()
   }
+
+  // useEffect, monitors a variable, whenever it changes, executes a function.
+  // 1st parameter: which function will be executed, 2nd parameter: which variable to monitor
+  
+  // remember that it executes its functions THE 1ST TIME the element is rendered.
+  // leaving the 2nd parameter empty [], it will only execute when rendered.
+  // you can have code on a react component that only executes once.
+  // usefull for api and database calls.
+  // useEffect(() = {}, [])
+
+  
 
   const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
 
