@@ -44,13 +44,35 @@ export function Home() {
   const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
 
   useEffect(() => {
+
+    // useEffect, monitors a variable, whenever it changes, and executes a function.
+    // 1st parameter: which function will be executed, 2nd parameter: which variable to monitor
+    // useEffect(() = {}, [])
+    // useEffect(() = {FUNCTION_TO_BE_EXECUTED}, [VARIABLE_TO_MONITOR])
+
+    // Remember that it executes its functions THE 1ST TIME the element is rendered.
+    
+    // Leaving the 2nd parameter empty [], it will only execute when rendered.
+    // you can have code on a react component that only executes once.
+    // usefull for api and database calls.
+
+    let interval: number
+
     if (activeCycle) {
-      setInterval(() => {
+      interval = setInterval(() => {
         setAmountSecondsPassed(
           differenceInSeconds(new Date(), activeCycle.startDate),
         )
       }, 1000)
     }
+
+    // useEffect can receive a return
+    // this return will be triggered WHEN the NEXT re-render of the useEffect happen
+    // useful to clear any information of the previous rendered useEffect
+    return () => {
+      clearInterval(interval)
+    }
+    
   }, [activeCycle])
 
   function handleCreateNewCycle(data: NewCycleFormData) {
@@ -65,17 +87,11 @@ export function Home() {
 
     setCycles((state) => [...state, newCycle])
     setActiveCycleId(id)
+    setAmountSecondsPassed(0)
     reset()
   }
 
-  // useEffect, monitors a variable, whenever it changes, executes a function.
-  // 1st parameter: which function will be executed, 2nd parameter: which variable to monitor
-
-  // remember that it executes its functions THE 1ST TIME the element is rendered.
-  // leaving the 2nd parameter empty [], it will only execute when rendered.
-  // you can have code on a react component that only executes once.
-  // usefull for api and database calls.
-  // useEffect(() = {}, [])
+  
 
   const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0
   const currentSeconds = activeCycle ? totalSeconds - amountSecondsPassed : 0
@@ -84,6 +100,13 @@ export function Home() {
   const secondsAmount = currentSeconds % 60
   const minutes = String(minutesAmount).padStart(2, '0')
   const seconds = String(secondsAmount).padStart(2, '0')
+
+  useEffect(() => {
+    if (activeCycle) {
+      document.title = `${minutes}:${seconds}`
+    }
+  }, [minutes, seconds, activeCycle])
+  
   const task = watch('task')
   const isSubmitDisable = !task
   return (
