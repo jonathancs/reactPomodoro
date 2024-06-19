@@ -19,7 +19,7 @@ const newCycleFormValidationSchema = zod.object({
   task: zod.string().min(1, "Informe a tarefa"),
   minutesAmount: zod
     .number()
-    .min(5, "O ciclo precisa ser de no mínimo 5 minutos.")
+    .min(1, "O ciclo precisa ser de no mínimo 5 minutos.")
     .max(60, "O ciclo precisa ser de no máximo 60 minutos."),
 });
 type NewCycleFormData = zod.infer<typeof newCycleFormValidationSchema>;
@@ -29,6 +29,7 @@ interface Cycle {
   minutesAmount: number;
   startDate: Date;
   interruptedDate?: Date;
+  finishedDate?: Date;
 }
 
 export function Home() {
@@ -44,26 +45,47 @@ export function Home() {
   });
 
   const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId);
+  const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0;
 
   useEffect(() => {
-    // useEffect, monitors a variable, whenever it changes, and executes a function.
-    // 1st parameter: which function will be executed, 2nd parameter: which variable to monitor
-    // useEffect(() = {}, [])
-    // useEffect(() = {FUNCTION_TO_BE_EXECUTED}, [VARIABLE_TO_MONITOR])
+    /* 
+      // useEffect, monitors a variable, whenever it changes, and executes a function.
+      // 1st parameter: which function will be executed, 2nd parameter: which variable to monitor
+      // useEffect(() = {}, [])
+      // useEffect(() = {FUNCTION_TO_BE_EXECUTED}, [VARIABLE_TO_MONITOR])
 
-    // Remember that it executes its functions THE 1ST TIME the element is rendered.
+      // Remember that it executes its functions THE 1ST TIME the element is rendered.
 
-    // Leaving the 2nd parameter empty [], it will only execute when rendered.
-    // you can have code on a react component that only executes once.
-    // usefull for api and database calls.
+      // Leaving the 2nd parameter empty [], it will only execute when rendered.
+      // you can have code on a react component that only executes once.
+      // usefull for api and database calls.
+    */
 
     let interval: number;
 
     if (activeCycle) {
       interval = setInterval(() => {
-        setAmountSecondsPassed(
-          differenceInSeconds(new Date(), activeCycle.startDate)
+        const secondsDifference = differenceInSeconds(
+          new Date(),
+          activeCycle.startDate
         );
+
+        if (secondsDifference >= totalSeconds) {
+          setCycles((state) =>
+            state.map((cycle) => {
+              if (cycle.id == activeCycleId) {
+                return { ...cycle, finishedDate: new Date() };
+              } else {
+                return cycle;
+              }
+            })
+          )
+          
+          setAmountSecondsPassed(totalSeconds)
+          clearInterval(interval)
+        } else {
+          setAmountSecondsPassed(secondsDifference);
+        }
       }, 1000);
     }
 
@@ -73,7 +95,7 @@ export function Home() {
     return () => {
       clearInterval(interval);
     };
-  }, [activeCycle]);
+  }, [activeCycle, activeCycleId, totalSeconds]);
 
   function handleCreateNewCycle(data: NewCycleFormData) {
     const id = String(new Date().getTime());
@@ -92,9 +114,8 @@ export function Home() {
   }
 
   function handleInterruptCycle() {
-
-    setCycles(
-      cycles.map((cycle) => {
+    setCycles((state) =>
+      state.map((cycle) => {
         if (cycle.id == activeCycleId) {
           return { ...cycle, interruptedDate: new Date() };
         } else {
@@ -103,7 +124,7 @@ export function Home() {
       })
     );
 
-    // loop each cycle inside cycles, 
+    // loop each cycle inside cycles,
     // for every looped cycled, CHECK if id matches,
     // if it does, return the cycle AS DESCRIBED.
     // IF DOESNT MATCH, return it unaltered.
@@ -111,7 +132,6 @@ export function Home() {
     setActiveCycleId(null);
   }
 
-  const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0;
   const currentSeconds = activeCycle ? totalSeconds - amountSecondsPassed : 0;
 
   const minutesAmount = Math.floor(currentSeconds / 60);
@@ -128,8 +148,8 @@ export function Home() {
   const task = watch("task");
   const isSubmitDisable = !task;
 
-  console.log(cycles)
-  
+  console.log(cycles);
+
   return (
     <HomeContainer>
       <form onSubmit={handleSubmit(handleCreateNewCycle)}>
@@ -153,8 +173,8 @@ export function Home() {
             type="number"
             id="minutesAmount"
             placeholder="00"
-            step={5}
-            min={5}
+            step={1}
+            min={1}
             max={60}
             disabled={!!activeCycle}
             {...register("minutesAmount", { valueAsNumber: true })}
