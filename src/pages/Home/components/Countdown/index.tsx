@@ -1,28 +1,14 @@
-import { useContext, useEffect, useState } from "react";
-import { CountdownContainer, Separator } from "./styles";
-import { CyclesContext } from "../..";
-import { differenceInSeconds } from "date-fns";
+import { differenceInSeconds } from 'date-fns'
+import { useContext, useEffect, useState } from 'react'
+import { CyclesContext } from '../..'
+import { CountdownContainer, Separator } from './styles'
 
 export function Countdown() {
-  const {activeCycle, activeCycleId, markCurrentCycleAsFinished} = useContext(CyclesContext)
-  const [amountSecondsPassed, setAmountSecondsPassed] = useState(0);
-  const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0;
+  const { activeCycle, activeCycleId, markCurrentCycleAsFinished } =
+    useContext(CyclesContext)
+  const [amountSecondsPassed, setAmountSecondsPassed] = useState(0)
 
-  const currentSeconds = activeCycle ? totalSeconds - amountSecondsPassed : 0;
-
-  const minutesAmount = Math.floor(currentSeconds / 60);
-  const secondsAmount = currentSeconds % 60;
-  const minutes = String(minutesAmount).padStart(2, "0");
-  const seconds = String(secondsAmount).padStart(2, "0");
-
-  useEffect(() => {
-    if (activeCycle) {
-      document.title = `${minutes}:${seconds}`;
-    }
-  }, [minutes, seconds, activeCycle]);
-
-
-
+  const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0
   useEffect(() => {
     /* 
       // useEffect, monitors a variable, whenever it changes, and executes a function.
@@ -36,41 +22,54 @@ export function Countdown() {
       // you can have code on a react component that only executes once.
       // usefull for api and database calls.
     */
-
-    let interval: number;
-
+    
+    let interval: number
     if (activeCycle) {
       interval = setInterval(() => {
         const secondsDifference = differenceInSeconds(
           new Date(),
-          activeCycle.startDate
-        );
+          activeCycle.startDate,
+        )
 
         if (secondsDifference >= totalSeconds) {
           markCurrentCycleAsFinished()
+
           setAmountSecondsPassed(totalSeconds)
           clearInterval(interval)
         } else {
-          setAmountSecondsPassed(secondsDifference);
+          setAmountSecondsPassed(secondsDifference)
         }
-      }, 1000);
+      }, 1000)
     }
-
     // useEffect can receive a return
     // this return will be triggered WHEN the NEXT re-render of the useEffect happen
     // useful to clear any information of the previous rendered useEffect
     return () => {
-      clearInterval(interval);
-    };
-  }, [activeCycle, activeCycleId, totalSeconds])
+      clearInterval(interval)
+    }
+  }, [activeCycle, totalSeconds, activeCycleId, markCurrentCycleAsFinished])
 
-    return (
-        <CountdownContainer>
-          <span>{minutes[0]}</span>
-          <span>{minutes[1]}</span>
-          <Separator>:</Separator>
-          <span>{seconds[0]}</span>
-          <span>{seconds[1]}</span>
-        </CountdownContainer>
-    )
+  const currentSeconds = activeCycle ? totalSeconds - amountSecondsPassed : 0
+
+  const minutesAmount = Math.floor(currentSeconds / 60)
+  const secondsAmount = currentSeconds % 60
+
+  const minutes = String(minutesAmount).padStart(2, '0')
+  const seconds = String(secondsAmount).padStart(2, '0')
+
+  useEffect(() => {
+    if (activeCycle) {
+      document.title = `${minutes}:${seconds}`
+    }
+  }, [minutes, seconds, activeCycle])
+
+  return (
+    <CountdownContainer>
+      <span>{minutes[0]}</span>
+      <span>{minutes[1]}</span>
+      <Separator>:</Separator>
+      <span>{seconds[0]}</span>
+      <span>{seconds[1]}</span>
+    </CountdownContainer>
+  )
 }
