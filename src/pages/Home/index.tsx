@@ -117,3 +117,19 @@ export function Home() {
       <form onSubmit={handleSubmit(handleCreateNewCycle)}>
         <NewCycleForm />
         <Countdown />
+
+        {activeCycle ? (
+          <StopCountdownButton onClick={handleInterruptCycle} type="button">
+            <HandPalm size={24} />
+            Interromper
+          </StopCountdownButton>
+        ) : (
+          <StartCountdownButton disabled={isSubmitDisable} type="submit">
+            <Play size={24} />
+            Começar
+          </StartCountdownButton>
+        )}
+      </form>
+    </HomeContainer>
+  )
+}
