@@ -37,6 +37,7 @@ export function Home() {
 
   const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
 
+<<<<<<< HEAD
   function markCurrentCycleAsFinished() {
     setCycles((state) =>
       state.map((cycle) => {
@@ -49,6 +50,8 @@ export function Home() {
     );
   }
 
+=======
+>>>>>>> 9a79973a56db66caabe9fa5b093d1417f5a22427
   function handleCreateNewCycle(data: NewCycleFormData) {
     const id = String(new Date().getTime())
 
@@ -81,10 +84,19 @@ export function Home() {
   return (
     <HomeContainer>
       <form onSubmit={handleSubmit(handleCreateNewCycle)}>
+<<<<<<< HEAD
         <CyclesContext.Provider value={{activeCycle, activeCycleId, markCurrentCycleAsFinished}}>
           <NewCycleForm />
           <Countdown/>
         </CyclesContext.Provider>
+=======
+        <NewCycleForm />
+        <Countdown
+          activeCycle={activeCycle}
+          setCycles={setCycles}
+          activeCycleId={activeCycleId}
+        />
+>>>>>>> 9a79973a56db66caabe9fa5b093d1417f5a22427
 
         {activeCycle ? (
           <StopCountdownButton onClick={handleInterruptCycle} type="button">
