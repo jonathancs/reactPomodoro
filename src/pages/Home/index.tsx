@@ -9,9 +9,9 @@ import {
   StartCountdownButton,
   StopCountdownButton,
 } from './styles'
-import { NewCycleForm } from './components/NewCycleForm'
+import { NewCycleForm } from './components/newCycleForm/index'
 import { Countdown } from './components/Countdown'
-import { CyclesContext } from '../../contexts/CyclesContext'
+import { CyclesContext } from '../../contexts/CyclesContexts'
 
 const newCycleFormValidationSchema = zod.object({
   task: zod.string().min(1, 'Informe a tarefa'),
